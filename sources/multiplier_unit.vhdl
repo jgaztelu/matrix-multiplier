@@ -1,0 +1,34 @@
+library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+entity multiplier is
+  port (
+  clk         : in std_logic;
+  rst         : in std_logic;
+  mult_zero   : in std_logic;
+  coef1,coef2 : in unsigned (6 downto 0);
+  in1,in2     : in unsigned (7 downto 0);
+  result      : out unsigned (15 downto 0)
+  );
+end entity;
+
+architecture arch of multiplier is
+signal sum_out_next,sum_out : unsigned (15 downto 0);
+
+begin
+
+registers: process(clk,rst)
+begin
+  if rst = '1' or mult_zero = '1' then
+    sum_out <= (others =>'0');
+  elsif clk'event and clk='1' then
+    sum_out <= sum_out_next;
+  end if;
+end process;
+
+multiplier: process(coef1,coef2,in1,in2,sum_out)
+begin
+  sum_out_next <= sum_out+(coef1*in1)+(coef2*in2);
+end process;
+result       <= sum_out;
+end architecture;
