@@ -3,9 +3,9 @@ library ieee;
   use ieee.numeric_std.all;
 
 entity matrix_multiplier_top is
-  port (
+port (
 
-  );
+  )
 end entity;
 
 architecture arch of matrix_multiplier_top is

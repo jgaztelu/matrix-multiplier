@@ -6,7 +6,7 @@ entity shift_8 is
   port (
   clk      : in std_logic;
   rst      : in std_logic;
-  shift    : in std_logic; -- Shifter
+  shift    : in std_logic; -- Activate Shifter
   data_in  : in std_logic_vector (7 downto 0);
   data_out : out std_logic_vector (47 downto 0)
   );
@@ -31,7 +31,7 @@ end process;
 shifting: process (data_in,shift,shifted)
 begin
   if shift = '1' then
-    shifted_next <= data_in & shifted (39 downto 0);
+    shifted_next <= data_in & shifted (47 downto 8);
   else
     shifted_next <= shifted;
   end if;
