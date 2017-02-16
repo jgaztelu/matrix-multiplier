@@ -8,12 +8,12 @@ entity multiplier is
   mult_zero   : in std_logic;
   coef1,coef2 : in unsigned (6 downto 0);
   in1,in2     : in unsigned (7 downto 0);
-  result      : out unsigned (15 downto 0)
+  result      : out unsigned (17 downto 0)
   );
 end entity;
 
 architecture arch of multiplier is
-signal sum_out_next,sum_out : unsigned (15 downto 0);
+signal sum_out_next,sum_out : unsigned (17 downto 0);
 
 begin
 

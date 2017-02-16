@@ -8,20 +8,21 @@ entity matrix_multi is
   clk          : in std_logic;
   rst          : in std_logic;
   start        : in std_logic;
-  rom_addr_rst : in std_logic;
-  dataROM      : in unsigned (13 downto 0);
-  in_reg       : in unsigned (15 downto 0);
+  finished     : out std_logic;
+  -- RAM signals
   RAM_WEB      : out std_logic;
   RAM_CS       : out std_logic;
   RAM_OE       : out std_logic;
-  addressRAM   : out std_logic_vector(6 downto 0);
-  dataRAM      : out unsigned (15 downto 0);
-  -- ROM signals
+  addressRAM   : out unsigned (6 downto 0);
+  dataRAM      : out unsigned (31 downto 0);
+    -- ROM signals
+  dataROM      : in unsigned (13 downto 0);
   ROM_CS       : out std_logic;
   ROM_OE       : out std_logic;
   addressROM   : out unsigned (8 downto 0);
-  register_OE  : out std_logic;
-  finished     : out std_logic
+  -- Register signals
+  in_reg       : in unsigned (15 downto 0);
+  register_OE  : out std_logic
 
   );
 end entity;
@@ -45,9 +46,10 @@ architecture arch of matrix_multi is
   signal counter,counter_next       : unsigned (1 downto 0);
   signal prod_count,prod_count_next : unsigned (3 downto 0);
   signal address,address_next       : unsigned (7 downto 0);
-  signal result                     : unsigned (15 downto 0);
+  signal result                     : unsigned (17 downto 0);
   signal mult_zero                  : std_logic;
-
+  signal reg_enable,reg_enable_next : std_logic;
+  signal finished_sig               : std_logic;
 begin
   --Update registers
   registers: process (clk,rst)
@@ -57,18 +59,20 @@ begin
       counter <="00";
       prod_count <= (others=>'0');
       address <= (others =>'0');
+      reg_enable <= (others => '0');
     elsif clk'event and clk ='1' then
       current_state <= next_state;
       counter       <= counter_next;
       prod_count    <= prod_count_next;
       address       <= address_next;
+      reg_enable    <= reg_enable_next;
     end if;
   end process;
   -- Combinational case
   combinational: process (current_state,start,counter,address,prod_count,result,prod_count)
   begin
     RAM_WEB <= '0';
-    finished <= '0';
+    finished_sig <= '0';
   case current_state is
       --Initial state
       when idle =>
@@ -95,21 +99,37 @@ begin
       when save =>
         mult_zero       <= '1';
         RAM_WEB         <= '1';
-        finished        <= '1';
         dataRAM         <= result;
         counter_next    <= "00";
         prod_count_next <= prod_count + 1;
         if prod_count = 15 then
           next_state    <= idle;
+          finished_sig  <= '1';
         else
           next_state    <= multiply;
+          finished_sig  <= '0';
         end if;
     end case;
   end process;
+
+  in_reg_enable: process (start,finished_sig,reg_enable)
+  begin
+    if start = '1' and finished_sig = '0' then
+      reg_enable_next <= '1';
+    elsif finished_sig = '1' then
+      reg_enable_next <= '0';
+    else
+      reg_enable_next <= '0';
+    end if;
+  end process;
+
+
     coef1 <= dataROM (6 downto 0);
     coef2 <= dataROM (13 downto 7);
     in1   <= in_reg (7 downto 0);
     in2   <= in_reg (15 downto 8);
+    register_OE <= reg_enable;
+
   multiplier_1 : multiplier
   port map (
     clk    => clk,
