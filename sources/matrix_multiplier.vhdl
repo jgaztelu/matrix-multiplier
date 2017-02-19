@@ -44,11 +44,11 @@ architecture arch of matrix_multi is
   signal coef1,coef2                : unsigned (6 downto 0);
   signal in1,in2                    : unsigned(7 downto 0);
   signal counter,counter_next       : unsigned (1 downto 0);
-  signal prod_count,prod_count_next : unsigned (3 downto 0);
+  signal prod_count,prod_count_next : unsigned (4 downto 0);
   signal addressROM_sig,addressROM_sig_next       : unsigned (8 downto 0);
   signal addressRAM_sig,addressRAM_sig_next       : unsigned (6 downto 0);
   signal baseROM                    : unsigned (7 downto 0);
-  signal result                     : unsigned (17 downto 0);
+  signal result, result_out         : unsigned (17 downto 0);
   signal mult_zero                  : std_logic;
   signal reg_enable,reg_enable_next : std_logic;
   signal finished_sig               : std_logic;
@@ -63,6 +63,7 @@ begin
       addressROM_sig <= (others =>'0'); -- Initialize ROM address to 1
       addressRAM_sig <= (others =>'0');
       reg_enable <= '0';
+      result_out  <= (others => '0');
     elsif clk'event and clk ='1' then
       current_state <= next_state;
       counter       <= counter_next;
@@ -70,10 +71,11 @@ begin
       addressROM_sig       <= addressROM_sig_next;
       addressRAM_sig       <= addressRAM_sig_next;
       reg_enable    <= reg_enable_next;
+      result_out  <= result;
     end if;
   end process;
   -- Combinational case
-  combinational: process (current_state,start,counter,addressROM_sig,addressRAM_sig,prod_count,result,prod_count)
+  combinational: process (current_state,start,counter,addressROM_sig,addressRAM_sig,prod_count,result_out)
   begin
     -- Set memory signals to default
     RAM_WEB <= '0';
@@ -111,15 +113,15 @@ begin
           addressROM_sig_next <= addressROM_sig + 1;
         end if;
       when save =>
-        mult_zero       <= '1'; -- Zero the multiplier units
         -- Assign RAM signals for writing
         RAM_WEB         <= '1';
         RAM_CS          <= '1';
         addressRAM_sig_next <= addressRAM_sig + 1; -- Update RAM address
-        dataRAM (17 downto 0) <= result;            -- Save data in RAM
+        dataRAM (17 downto 0) <= result_out;            -- Save data in RAM
         counter_next    <= "00";
         addressROM_sig_next <= addressROM_sig + 1;
-        if prod_count = 15 then
+        mult_zero       <= '1'; -- Zero the multiplier units
+        if prod_count = 16 then
           next_state    <= idle;
           finished_sig  <= '1';
         else
@@ -155,14 +157,16 @@ begin
     end if;
   end process;
 
-    addressROM  <= addressROM_sig + baseROM;
-    addressRAM  <= addressRAM_sig;
-    coef1 <= dataROM (6 downto 0);
-    coef2 <= dataROM (13 downto 7);
-    in1   <= in_reg (7 downto 0);
-    in2   <= in_reg (15 downto 8);
-    register_OE <= reg_enable;
-    finished    <= finished_sig;
+-- Assign signals to module I/O
+    addressROM             <= addressROM_sig + baseROM;
+    addressRAM             <= addressRAM_sig;
+    coef1                  <= dataROM (6 downto 0);
+    coef2                  <= dataROM (13 downto 7);
+    in1                    <= in_reg (7 downto 0);
+    in2                    <= in_reg (15 downto 8);
+    register_OE            <= reg_enable;
+    finished               <= finished_sig;
+    dataRAM (31 downto 18) <= (others => '0');
 
   multiplier_1 : multiplier
   port map (
