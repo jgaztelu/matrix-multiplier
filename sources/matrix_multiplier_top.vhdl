@@ -10,7 +10,7 @@ entity matrix_multiplier_top is
   data_write : in std_logic;
   data_in : in std_logic_vector(7 downto 0);
   finished  : out std_logic;
-  data_out  : out std_logic_vector (16 downto 0)
+  data_out  : out std_logic_vector (31 downto 0)
   );
 end entity;
 
@@ -25,8 +25,8 @@ architecture arch of matrix_multiplier_top is
     RAM_WEB     : out std_logic;
     RAM_CS      : out std_logic;
     RAM_OE      : out std_logic;
-    addressRAM  : out std_logic_vector(6 downto 0);
-    dataRAM     : out unsigned (15 downto 0);
+    addressRAM  : out unsigned (6 downto 0);
+    dataRAM     : out unsigned (31 downto 0);
     dataROM     : in  unsigned (13 downto 0);
     ROM_CS      : out std_logic;
     ROM_OE      : out std_logic;
@@ -75,12 +75,14 @@ architecture arch of matrix_multiplier_top is
   signal ROM_CS,ROM_OE         : std_logic; -- ROM control signals
   signal RAM_addr              : unsigned (6 downto 0); -- RAM address selector
   signal ROM_addr              : unsigned (8 downto 0); -- ROM address selector
-  signal RAM_data              : unsigned (31 downto 0); -- Data read from the ROM
-  signal ROM_data              : unsigned (13 downto 0); -- Data written to RAM
-  signal register_OE            : std_logic;
+  signal RAM_data              : unsigned (31 downto 0); -- Data written to RAM
+  signal ROM_data              : unsigned (13 downto 0); -- Data read from the ROM
+  signal in_reg_data           : std_logic_vector (15 downto 0); -- Data read from the input register
+  signal register_OE           : std_logic;            -- Activate input register output
 
 
 begin
+
 
   matrix_multi1 : matrix_multi
   port map (
@@ -97,7 +99,7 @@ begin
     ROM_CS      => ROM_CS,
     ROM_OE      => ROM_OE,
     addressROM  => ROM_addr,
-    in_reg      => in_reg,
+    in_reg      => unsigned(in_reg_data),
     register_OE => register_OE
   );
 
@@ -109,7 +111,7 @@ begin
     OE       => register_OE,
     WEB      => data_write,
     data_in  => data_in,
-    data_out => data_out
+    data_out => in_reg_data
   );
 
   rom_wrapper1 : rom_wrapper
@@ -125,7 +127,7 @@ begin
   port map (
     addr     => RAM_addr,
     data_out => data_out,
-    data_in  => RAM_data,
+    data_in  => std_logic_vector(RAM_data),
     CK       => clk,
     CS       => RAM_CS,
     WEB      => RAM_WEB,
