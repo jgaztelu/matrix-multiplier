@@ -60,7 +60,7 @@ begin
       current_state <= idle;
       counter <="00";
       prod_count <= (others=>'0');
-      addressROM_sig <= (others =>'0');
+      addressROM_sig <= (others =>'0'); -- Initialize ROM address to 1
       addressRAM_sig <= (others =>'0');
       reg_enable <= '0';
     elsif clk'event and clk ='1' then
@@ -90,22 +90,25 @@ begin
         mult_zero <='0';
         counter_next <= "00";
         prod_count_next <= (others => '0');
-        addressROM_sig_next <= (others =>'0');
         if start='1' then
           next_state <= multiply;
+          addressROM_sig_next <= addressROM_sig + 1; -- Update next ROM address in the cycle previous to multiplying state to compensate ROM delay.
         else
+          addressROM_sig_next <= (others => '0');
           next_state <= idle;
         end if;
       --Send data to multiplier
       when multiply =>
         mult_zero <= '0';
         counter_next <= counter + 1;
-        addressROM_sig_next <= baseROM + addressROM_sig + 1;
         prod_count_next <= prod_count;
         if counter = 2 then
           next_state <= save;
+          addressROM_sig_next <= (others => '0');
+          prod_count_next <= prod_count + 1;
         else
           next_state <= multiply;
+          addressROM_sig_next <= addressROM_sig + 1;
         end if;
       when save =>
         mult_zero       <= '1'; -- Zero the multiplier units
@@ -115,8 +118,7 @@ begin
         addressRAM_sig_next <= addressRAM_sig + 1; -- Update RAM address
         dataRAM (17 downto 0) <= result;            -- Save data in RAM
         counter_next    <= "00";
-        prod_count_next <= prod_count + 1;
-        addressROM_sig_next <= (others => '0');
+        addressROM_sig_next <= addressROM_sig + 1;
         if prod_count = 15 then
           next_state    <= idle;
           finished_sig  <= '1';
@@ -136,24 +138,24 @@ begin
     elsif finished_sig = '1' then
       reg_enable_next <= '0';
     else
-      reg_enable_next <= '0';
+      reg_enable_next <= reg_enable;
     end if;
   end process;
 
   rom_base_address: process (prod_count)
   begin
-    if prod_count <= 5 then
+    if prod_count <= x"03" then
       baseROM <= (others => '0');
-    elsif prod_count <= 11 then
-      baseROM <= x"06"; --6
-    elsif prod_count <= 17 then
-      baseROM <= x"0C"; -- 12
+    elsif prod_count <= x"07" then
+      baseROM <= x"03"; --3
+    elsif prod_count <= x"0B" then
+      baseROM <= x"06"; -- 6
     else
-      baseROM <= x"12";
+      baseROM <= x"09"; -- 9
     end if;
   end process;
 
-    addressROM  <= addressROM_sig;
+    addressROM  <= addressROM_sig + baseROM;
     addressRAM  <= addressRAM_sig;
     coef1 <= dataROM (6 downto 0);
     coef2 <= dataROM (13 downto 7);

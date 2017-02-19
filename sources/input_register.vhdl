@@ -105,12 +105,15 @@ begin
         reg_word_counter_next <= "10";
       when "10" =>
         data_out <= reg_out (47 downto 32);
-        reg_word_counter_next <= "00";
+        reg_word_counter_next <= "11";
         if reg_select_counter = "11" then
           reg_select_counter_next <= "00";
         else
           reg_select_counter_next <=std_logic_vector(unsigned(reg_select_counter)+1);
         end if;
+      when "11" =>
+        reg_word_counter_next <= "00"; -- This case introduces an extra clock cycle delay to account for the Save state of the multiplier
+        data_out <= reg_out (47 downto 32);
     when others =>
          reg_word_counter_next <= reg_word_counter;
          reg_select_counter_next <= reg_select_counter;

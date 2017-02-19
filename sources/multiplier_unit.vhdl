@@ -17,7 +17,7 @@ signal sum_out_next,sum_out : unsigned (17 downto 0);
 
 begin
 
-registers: process(clk,rst)
+registers: process(clk,rst,mult_zero)
 begin
   if rst = '1' or mult_zero = '1' then
     sum_out <= (others =>'0');
