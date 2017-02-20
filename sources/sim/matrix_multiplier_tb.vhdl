@@ -33,7 +33,7 @@ architecture behavioural of matrix_multi_tb is
   constant clk_period      : time := 50 ns;
   shared variable row      : line;
   shared variable row_data : std_logic_vector(7 downto 0);
-  file input_file          : text open read_mode is "input_stimuli.txt";
+  file input_file          : text open read_mode is "input_stimuli_Jaume.txt";
   signal row_counter : integer:=0;
 begin
 

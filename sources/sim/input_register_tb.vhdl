@@ -30,7 +30,7 @@ signal data_in  : std_logic_vector(7 downto 0);
 signal data_out : std_logic_vector (15 downto 0);
 signal data1, data2 : std_logic_vector(7 downto 0);
 -- Input data file
-file input_data : text open read_mode is in "input_stimuli.txt";
+file input_data : text open read_mode is in "input_stimuli_Jaume.txt";
 
 signal row_counter : integer:=0;
 shared variable row         : line;
