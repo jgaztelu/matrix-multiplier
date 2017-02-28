@@ -11,15 +11,18 @@ architecture behavioural of matrix_multi_tb is
   -- DUT
   component matrix_multiplier_top
   port (
-    clk        : in  std_logic;
-    rst        : in  std_logic;
-    start      : in  std_logic;
-    data_write : in  std_logic;
-    data_in    : in  std_logic_vector(7 downto 0);
-    finished   : out std_logic;
-    data_out   : out std_logic_vector (31 downto 0)
+    clk          : in  std_logic;
+    rst          : in  std_logic;
+    start        : in  std_logic;
+    data_write   : in  std_logic;
+    data_in      : in  std_logic_vector(7 downto 0);
+    read_address : in  unsigned (6 downto 0);
+    read_data    : in  std_logic;
+    finished     : out std_logic;
+    data_out     : out std_logic_vector (31 downto 0)
   );
   end component matrix_multiplier_top;
+
 
   -- DUT SIGNALS
   signal    clk            : std_logic;
@@ -29,6 +32,8 @@ architecture behavioural of matrix_multi_tb is
   signal  data_in          : std_logic_vector (7 downto 0);
   signal finished          : std_logic;
   signal data_out          : std_logic_vector (31 downto 0);
+  signal read_address      : unsigned (6 downto 0);
+  signal read_data         : std_logic;
   -- TB SIGNALS
   constant clk_period      : time := 50 ns;
   shared variable row      : line;
@@ -48,6 +53,8 @@ begin
   stim_process: process
   begin
     rst <= '1';
+    read_data <= '0';
+    read_address <= (others => '0');
     wait for clk_period*1.5;
     rst <= '0';
     start <= '0';
@@ -57,6 +64,12 @@ begin
     start <= '1';
     wait for clk_period;
     start <= '0';
+    wait for 6*clk_period;
+    while finished = '0' loop
+        read_data <= '1';
+        read_address <= read_address +1;
+        wait for 6*clk_period;
+    end loop;
     wait;
   end process;
 
@@ -73,15 +86,18 @@ begin
       wait;
   end process;
 
-  matrix_multiplier_top1 : matrix_multiplier_top
+  matrix_multiplier_top_i : matrix_multiplier_top
   port map (
-    clk        => clk,
-    rst        => rst,
-    start      => start,
-    data_write => data_write,
-    data_in    => data_in,
-    finished   => finished,
-    data_out   => data_out
+    clk          => clk,
+    rst          => rst,
+    start        => start,
+    data_write   => data_write,
+    data_in      => data_in,
+    read_address => read_address,
+    read_data    => read_data,
+    finished     => finished,
+    data_out     => data_out
   );
+
 
 end architecture;

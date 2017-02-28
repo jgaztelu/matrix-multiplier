@@ -10,11 +10,9 @@ entity matrix_multi is
   start        : in std_logic;
   finished     : out std_logic;
   -- RAM signals
-  RAM_WEB      : out std_logic;
-  RAM_CS       : out std_logic;
-  RAM_OE       : out std_logic;
   addressRAM   : out unsigned (6 downto 0);
   dataRAM      : out unsigned (31 downto 0);
+  RAM_write    : out std_logic;
     -- ROM signals
   dataROM      : in unsigned (13 downto 0);
   ROM_CS       : out std_logic;
@@ -78,9 +76,7 @@ begin
   combinational: process (current_state,start,counter,addressROM_sig,addressRAM_sig,prod_count,result_out)
   begin
     -- Set memory signals to default
-    RAM_WEB <= '0';
-    RAM_CS  <= '0';
-    RAM_OE  <= '0';
+    RAM_write <= '0';
     ROM_CS  <= '1';
     ROM_OE  <= '1';
     finished_sig <= '0';
@@ -114,8 +110,7 @@ begin
         end if;
       when save =>
         -- Assign RAM signals for writing
-        RAM_WEB         <= '1';
-        RAM_CS          <= '1';
+        RAM_write <= '1';
         addressRAM_sig_next <= addressRAM_sig + 1; -- Update RAM address
         dataRAM (17 downto 0) <= result_out;            -- Save data in RAM
         counter_next    <= "00";
