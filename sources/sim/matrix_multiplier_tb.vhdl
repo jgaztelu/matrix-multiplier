@@ -38,6 +38,7 @@ architecture behavioural of matrix_multi_tb is
   constant clk_period      : time := 50 ns;
   shared variable row      : line;
   shared variable row_data : std_logic_vector(7 downto 0);
+  signal readram           : std_logic;
   file input_file          : text open read_mode is "input_stimuli_Jaume.txt";
   signal row_counter : integer:=0;
 begin
@@ -64,15 +65,16 @@ begin
     start <= '1';
     wait for clk_period;
     start <= '0';
-    wait for 6*clk_period;
+    wait for 91.5*clk_period;
     while finished = '0' loop
         read_data <= '1';
         read_address <= read_address +1;
-        wait for 6*clk_period;
+        wait for 2*clk_period;
     end loop;
+    readram <= '1';
     wait;
   end process;
-
+  
   file_process: process
   begin
       wait for clk_period;
@@ -85,6 +87,7 @@ begin
       end loop;
       wait;
   end process;
+  
 
   matrix_multiplier_top_i : matrix_multiplier_top
   port map (

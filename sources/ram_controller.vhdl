@@ -15,15 +15,17 @@ entity ram_controller is
   );
 end entity;
 
+-- This component decides which address is going to be selected for the RAM,
+-- and it also activates the corresponding signals to write or read data.
+-- In case of simultaneous write and read signal, WRITE IS PRIORITISED
 architecture arch of ram_controller is
-
 begin
 process (read_address,write_address,mem_read,mem_write)
 begin
-  if mem_write = '1' then
+    if mem_write = '1' then
     RAM_address <= write_address;
     RAM_CS <= '1';
-    RAM_OE <= '0';
+    RAM_OE <= '1';
     RAM_WEB <= '1';
   elsif mem_read = '1' then
     RAM_address <= read_address;
@@ -32,8 +34,8 @@ begin
     RAM_WEB <= '0';
   else
     RAM_address <= (others => '0');
-    RAM_CS <= '0';
-    RAM_OE <= '0';
+    RAM_CS <= '1';
+    RAM_OE <= '1';
     RAM_WEB <= '0';
   end if;
 end process;

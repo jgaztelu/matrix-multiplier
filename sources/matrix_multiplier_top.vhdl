@@ -18,23 +18,26 @@ end entity;
 
 architecture arch of matrix_multiplier_top is
 --COMPONENTS
-  component matrix_multi
-  port (
-    clk         : in  std_logic;
-    rst         : in  std_logic;
-    start       : in  std_logic;
-    finished    : out std_logic;
-    addressRAM  : out unsigned (6 downto 0);
-    dataRAM     : out unsigned (31 downto 0);
-    RAM_write   : out std_logic;
-    dataROM     : in  unsigned (13 downto 0);
-    ROM_CS      : out std_logic;
-    ROM_OE      : out std_logic;
-    addressROM  : out unsigned (8 downto 0);
-    in_reg      : in  unsigned (15 downto 0);
-    register_OE : out std_logic
-  );
-  end component matrix_multi;
+component matrix_multi
+port (
+  clk         : in  std_logic;
+  rst         : in  std_logic;
+  start       : in  std_logic;
+  finished    : out std_logic;
+  addressRAM  : out unsigned (6 downto 0);
+  dataRAM     : out unsigned (31 downto 0);
+  RAM_WEB     : out std_logic;
+  RAM_CS      : out std_logic;
+  RAM_OE      : out std_logic;
+  dataROM     : in  unsigned (13 downto 0);
+  ROM_CS      : out std_logic;
+  ROM_OE      : out std_logic;
+  addressROM  : out unsigned (8 downto 0);
+  in_reg      : in  unsigned (15 downto 0);
+  register_OE : out std_logic
+);
+end component matrix_multi;
+
 
   component input_register
   port (
@@ -69,30 +72,14 @@ architecture arch of matrix_multiplier_top is
   );
   end component ram_wrapper;
 
-  component ram_controller
-  port (
-    read_address  : in  unsigned (6 downto 0);
-    write_address : in  unsigned (6 downto 0);
-    mem_read      : in  std_logic;
-    mem_write     : in  std_logic;
-    RAM_address   : out unsigned (6 downto 0);
-    RAM_WEB       : out std_logic;
-    RAM_OE        : out std_logic;
-    RAM_CS        : out std_logic
-  );
-  end component ram_controller;
-
-
   --  signals
 
-  signal RAM_WEB,RAM_CS,RAM_OE : std_logic; -- RAM control signals
   signal ROM_CS,ROM_OE         : std_logic; -- ROM control signals
-  signal RAM_addr              : unsigned (6 downto 0); -- RAM address selector
-  signal RAM_wr_addr           : unsigned (6 downto 0);
   signal ROM_addr              : unsigned (8 downto 0); -- ROM address selector
-  signal RAM_data              : unsigned (31 downto 0); -- Data written to RAM
-  signal RAM_write             : std_logic; -- Signal to write to RAM
   signal ROM_data              : unsigned (13 downto 0); -- Data read from the ROM
+  signal RAM_WEB,RAM_CS,RAM_OE : std_logic; -- RAM control signals
+  signal RAM_addr              : unsigned (6 downto 0); -- RAM address selector
+  signal RAM_data              : unsigned (31 downto 0); -- Data written to RAM
   signal in_reg_data           : std_logic_vector (15 downto 0); -- Data read from the input register
   signal register_OE           : std_logic;            -- Activate input register output
 
@@ -106,16 +93,19 @@ begin
     rst         => rst,
     start       => start,
     finished    => finished,
-    addressRAM  => RAM_wr_addr,
+    addressRAM  => RAM_addr,
     dataRAM     => RAM_data,
+    RAM_WEB     => RAM_WEB,
+    RAM_CS      => RAM_CS,
+    RAM_OE      => RAM_OE,
     dataROM     => ROM_data,
-    RAM_write   => RAM_write,
     ROM_CS      => ROM_CS,
     ROM_OE      => ROM_OE,
     addressROM  => ROM_addr,
-    in_reg      => unsigned(in_reg_data),
+    in_reg      => in_reg_data,
     register_OE => register_OE
   );
+
 
 
   input_register1 : input_register
@@ -148,17 +138,6 @@ begin
     OE       => RAM_OE
   );
 
-  ram_controller1 : ram_controller
-  port map (
-    read_address  => read_address,
-    write_address => RAM_wr_addr,
-    mem_read      => read_data,
-    mem_write     => RAM_write,
-    RAM_address   => RAM_addr,
-    RAM_WEB       => RAM_WEB,
-    RAM_OE        => RAM_OE,
-    RAM_CS        => RAM_CS
-  );
 
 
 
