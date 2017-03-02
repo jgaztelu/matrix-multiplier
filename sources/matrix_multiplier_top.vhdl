@@ -10,7 +10,6 @@ entity matrix_multiplier_top is
   data_write   : in std_logic;
   data_in      : in std_logic_vector(7 downto 0);
   read_address : in unsigned (6 downto 0);
-  read_data    : in std_logic;
   finished     : out std_logic;
   data_out     : out std_logic_vector (31 downto 0)
   );
@@ -102,7 +101,7 @@ begin
     ROM_CS      => ROM_CS,
     ROM_OE      => ROM_OE,
     addressROM  => ROM_addr,
-    in_reg      => in_reg_data,
+    in_reg      => unsigned(in_reg_data),
     register_OE => register_OE
   );
 

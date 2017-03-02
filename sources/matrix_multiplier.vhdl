@@ -78,7 +78,9 @@ begin
   combinational: process (current_state,start,counter,addressROM_sig,addressRAM_sig_prev,prod_count,result_out)
   begin
     -- Set memory signals to default
-    RAM_write <= '0';
+    RAM_WEB <= '0';
+    RAM_OE <= '0';
+    RAM_CS <= '0';
     ROM_CS  <= '1';
     ROM_OE  <= '1';
     finished_sig <= '0';
@@ -99,6 +101,8 @@ begin
         end if;
       --Send data to multiplier
       when multiply =>
+        RAM_OE <= '1';
+        RAM_CS <= '1';
         mult_zero <= '0';
         counter_next <= counter + 1;
         prod_count_next <= prod_count;
@@ -107,15 +111,15 @@ begin
           addressROM_sig_next <= (others => '0');
           prod_count_next <= prod_count + 1;
           addressRAM_sig <= addressRAM_sig_prev + 1; -- Update RAM address
-          RAM_write <= '1'; -- Writing to RAM has a clock cycle delay, so it is updated now
         else
           next_state <= multiply;
           addressROM_sig_next <= addressROM_sig + 1;
-          RAM_write <= '0';
         end if;
       when save =>
         -- Assign RAM signals for writing
-        RAM_write <= '1';
+        RAM_CS <= '1';
+        RAM_WEB <= '1';
+        RAM_OE <= '1';
         counter_next    <= "00";
         dataRAM (17 downto 0) <= result_out;            -- Save data in RAM
         addressROM_sig_next <= addressROM_sig + 1;

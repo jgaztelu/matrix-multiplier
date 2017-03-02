@@ -13,22 +13,22 @@ entity multiplier is
 end entity;
 
 architecture arch of multiplier is
-signal sum_out_prev,sum_out : unsigned (17 downto 0);
+signal sum_out_next,sum_out : unsigned (17 downto 0);
 
 begin
 
 registers: process(clk,rst,mult_zero)
 begin
   if rst = '1' or mult_zero = '1' then
-    sum_out_prev <= (others =>'0');
+    sum_out <= (others =>'0');
   elsif clk'event and clk='1' then
-    sum_out_prev <= sum_out;
+    sum_out <= sum_out_next;
   end if;
 end process;
 
-multiplier: process(coef1,coef2,in1,in2,sum_out_prev)
+multiplier: process(coef1,coef2,in1,in2,sum_out)
 begin
-  sum_out<= sum_out_prev+(coef1*in1)+(coef2*in2);
+  sum_out_next <= sum_out+(coef1*in1)+(coef2*in2);
 end process;
 result       <= sum_out;
 end architecture;
