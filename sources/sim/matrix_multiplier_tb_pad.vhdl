@@ -4,23 +4,22 @@ library ieee;
   use ieee.std_logic_textio.all;
   use std.textio.all;
 
-entity matrix_multi_tb is
+entity matrix_multi_tb_pad is
 end entity;
 
-architecture behavioural of matrix_multi_tb is
+architecture behavioural of matrix_multi_tb_pad is
   -- DUT
-  component matrix_multiplier_top
+  component matrix_multiplier_top_p
   port (
-    clk          : in  std_logic;
-    rst          : in  std_logic;
-    start        : in  std_logic;
-    data_write   : in  std_logic;
-    data_in      : in  std_logic_vector(7 downto 0);
-    finished     : out std_logic;
-    data_out     : out std_logic_vector (17 downto 0)
+    clk        : in  std_logic;
+    rst        : in  std_logic;
+    start      : in  std_logic;
+    data_write : in  std_logic;
+    data_in    : in  std_logic_vector(7 downto 0);
+    finished   : out std_logic;
+    data_out   : out std_logic_vector (17 downto 0)
   );
-  end component matrix_multiplier_top;
-
+  end component matrix_multiplier_top_p;
 
   -- DUT SIGNALS
   signal    clk            : std_logic;
@@ -30,8 +29,6 @@ architecture behavioural of matrix_multi_tb is
   signal  data_in          : std_logic_vector (7 downto 0);
   signal finished          : std_logic;
   signal data_out          : std_logic_vector (17 downto 0);
-  signal read_address      : unsigned (6 downto 0);
-  signal read_data         : std_logic;
   -- TB SIGNALS
   constant clk_period      : time := 50 ns;
   shared variable row      : line;
@@ -51,12 +48,11 @@ begin
   stim_process: process
   begin
     rst <= '1';
-    read_data <= '0';
     wait for clk_period*1.5;
     rst <= '0';
     start <= '0';
     data_write <= '1';
-    wait for clk_period * 24; -- for clk_period;
+    wait for clk_period * 24;-- for clk_period;
     data_write <= '0';
     start <= '1';
     wait for clk_period;
@@ -77,17 +73,15 @@ begin
       wait;
   end process;
 
-
-  matrix_multiplier_top_i : matrix_multiplier_top
+  matrix_multiplier_top1 : matrix_multiplier_top_p
   port map (
-    clk          => clk,
-    rst          => rst,
-    start        => start,
-    data_write   => data_write,
-    data_in      => data_in,
-    finished     => finished,
-    data_out     => data_out
+    clk        => clk,
+    rst        => rst,
+    start      => start,
+    data_write => data_write,
+    data_in    => data_in,
+    finished   => finished,
+    data_out   => data_out
   );
-
 
 end architecture;

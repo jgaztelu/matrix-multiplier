@@ -9,9 +9,8 @@ entity matrix_multiplier_top is
   start        : in std_logic;
   data_write   : in std_logic;
   data_in      : in std_logic_vector(7 downto 0);
-  read_address : in unsigned (6 downto 0);
   finished     : out std_logic;
-  data_out     : out std_logic_vector (31 downto 0)
+  data_out     : out std_logic_vector (17 downto 0)
   );
 end entity;
 
@@ -54,7 +53,7 @@ end component matrix_multi;
     addr     : in  unsigned(8 downto 0);
     data_out : out unsigned(13 downto 0);
     CK       : IN  std_logic;
-    CS       : IN  std_logic;
+    CS       : IN  std_logic;  
     OE       : IN  std_logic
   );
   end component rom_wrapper;
@@ -110,7 +109,7 @@ begin
   input_register1 : input_register
   port map (
     clk      => clk,
-    rst      => rst,
+    rst      => rst,  
     OE       => register_OE,
     WEB      => data_write,
     data_in  => data_in,
@@ -129,7 +128,7 @@ begin
   ram_wrapper1 : ram_wrapper
   port map (
     addr     => RAM_addr,
-    data_out => data_out,
+    data_out => open,
     data_in  => std_logic_vector(RAM_data),
     CK       => clk,
     CS       => RAM_CS,
@@ -137,6 +136,7 @@ begin
     OE       => RAM_OE
   );
 
+data_out <= std_logic_vector(RAM_data(17 downto 0));
 
 
 

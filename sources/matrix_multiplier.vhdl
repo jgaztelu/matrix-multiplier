@@ -52,6 +52,7 @@ architecture arch of matrix_multi is
   signal mult_zero                  : std_logic;
   signal reg_enable,reg_enable_next : std_logic;
   signal finished_sig               : std_logic;
+  signal dataRAM_sig,dataRAM_sig_next  : unsigned (17 downto 0);
 begin
   --Update registers
   registers: process (clk,rst)
@@ -64,6 +65,7 @@ begin
       addressRAM_sig_prev <= (others =>'0');
       reg_enable <= '0';
       result_out  <= (others => '0');
+      dataRAM_sig <= (others => '0');
     elsif clk'event and clk ='1' then
       current_state <= next_state;
       counter       <= counter_next;
@@ -72,6 +74,7 @@ begin
       addressRAM_sig_prev <= addressRAM_sig;
       reg_enable    <= reg_enable_next;
       result_out  <= result;
+      dataRAM_sig <= dataRAM_sig_next;
     end if;
   end process;
   -- Combinational case
@@ -85,7 +88,8 @@ begin
     ROM_OE  <= '1';
     finished_sig <= '0';
     addressRAM_sig <= addressRAM_sig_prev;
-
+    dataRAM_sig_next <= dataRAM_sig;
+    
   case current_state is
       --Initial state
       when idle =>
@@ -105,7 +109,6 @@ begin
         RAM_CS <= '1';
         mult_zero <= '0';
         counter_next <= counter + 1;
-        prod_count_next <= prod_count;
         if counter = 2 then
           next_state <= save;
           addressROM_sig_next <= (others => '0');
@@ -114,14 +117,16 @@ begin
         else
           next_state <= multiply;
           addressROM_sig_next <= addressROM_sig + 1;
-        end if;
+          prod_count_next <= prod_count;
+       end if;
       when save =>
         -- Assign RAM signals for writing
         RAM_CS <= '1';
         RAM_WEB <= '1';
         RAM_OE <= '1';
+        prod_count_next <= prod_count;
         counter_next    <= "00";
-        dataRAM (17 downto 0) <= result_out;            -- Save data in RAM
+        dataRAM_sig_next<= result_out;            -- Save data in RAM
         addressROM_sig_next <= addressROM_sig + 1;
         mult_zero       <= '1'; -- Zero the multiplier units
         if prod_count = 16 then
@@ -170,6 +175,7 @@ begin
     register_OE            <= reg_enable;
     finished               <= finished_sig;
     dataRAM (31 downto 18) <= (others => '0');
+    dataRAM (17 downto 0)  <= dataRAM_sig;
 
   multiplier_1 : multiplier
   port map (
